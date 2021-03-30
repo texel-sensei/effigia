@@ -48,7 +48,6 @@
 #define __GUI_PAINT_H
 
 #include "DEV_Config.h"
-#include "../Fonts/fonts.h"
 
 /**
  * Image attributes
@@ -94,8 +93,6 @@ typedef enum {
 #define RED            BLACK
 
 #define IMAGE_BACKGROUND    WHITE
-#define FONT_FOREGROUND     BLACK
-#define FONT_BACKGROUND     WHITE
 
 /**
  * The size of the point
@@ -137,19 +134,6 @@ typedef enum {
     DRAW_FILL_FULL,
 } DRAW_FILL;
 
-/**
- * Custom structure of a time attribute
-**/
-typedef struct {
-    UWORD Year;  //0000
-    UBYTE  Month; //1 - 12
-    UBYTE  Day;   //1 - 30
-    UBYTE  Hour;  //0 - 23
-    UBYTE  Min;   //0 - 59
-    UBYTE  Sec;   //0 - 59
-} PAINT_TIME;
-extern PAINT_TIME sPaint_time;
-
 //init and Clear
 void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
 void Paint_SelectImage(UBYTE *image);
@@ -165,13 +149,6 @@ void Paint_DrawPoint(UWORD Xpoint, UWORD Ypoint, UWORD Color, DOT_PIXEL Dot_Pixe
 void Paint_DrawLine(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color, LINE_STYLE Line_Style, DOT_PIXEL Dot_Pixel);
 void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend, UWORD Color, DRAW_FILL Filled , DOT_PIXEL Dot_Pixel);
 void Paint_DrawCircle(UWORD X_Center, UWORD Y_Center, UWORD Radius, UWORD Color, DRAW_FILL Draw_Fill , DOT_PIXEL Dot_Pixel);
-
-//Display string
-void Paint_DrawChar(UWORD Xstart, UWORD Ystart, const char Acsii_Char, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
-void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
-void Paint_DrawString_CN(UWORD Xstart, UWORD Ystart, const char * pString, cFONT* font, UWORD Color_Background, UWORD Color_Foreground);
-void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
-void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, UWORD Color_Background, UWORD Color_Foreground);
 
 //pic
 void Paint_DrawBitMap(const unsigned char* image_buffer);
