@@ -1,9 +1,9 @@
 DIR_FONTS = ./Fonts
-DIR_OBJ = ./obj
+DIR_SRC = ./src
 DIR_BIN = ./bin
 
-OBJ_C = $(wildcard ${DIR_FONTS}/*.c ${DIR_OBJ}/*.c)
-OBJ_O = $(patsubst %.c,${DIR_BIN}/%.o,$(notdir ${OBJ_C}))
+SRC_C = $(wildcard ${DIR_FONTS}/*.c ${DIR_SRC}/*.c)
+SRC_O = $(patsubst %.c,${DIR_BIN}/%.o,$(notdir ${SRC_C}))
 
 TARGET = epd
 #BIN_TARGET = ${DIR_BIN}/${TARGET}
@@ -17,10 +17,10 @@ CFLAGS += $(MSG) $(DEBUG) -std=c99
 
 LIB = -lwiringPi -lm
 
-${TARGET}:${OBJ_O}
-	$(CC) $(CFLAGS) $(OBJ_O) -o $@ $(LIB)
+${TARGET}:${SRC_O}
+	$(CC) $(CFLAGS) $(SRC_O) -o $@ $(LIB)
 
-${DIR_BIN}/%.o : $(DIR_OBJ)/%.c
+${DIR_BIN}/%.o : $(DIR_SRC)/%.c
 	$(CC) $(CFLAGS) -c  $< -o $@ $(LIB)
 
 ${DIR_BIN}/%.o:$(DIR_FONTS)/%.c
