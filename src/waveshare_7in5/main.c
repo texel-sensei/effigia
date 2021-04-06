@@ -7,12 +7,128 @@
 #endif
 #include "GUI_Paint.h"
 #include "GUI_BMPfile.h"
-#include "ImageData.h"
 #include "EPD_7in5b.h"
 
-#define GALLERY_FILE "gallery.txt"
+#include "DisplayModule.h"
 
-void  Handler(int signo)
+typedef struct WaveshareDisplay {
+	UBYTE* red;
+	UBYTE* black;
+} WaveshareDisplay;
+
+typedef enum Color {
+	black = 0, white, red
+} Color;
+
+static WaveshareDisplay* alloc_display() {
+	WaveshareDisplay* display = malloc(sizeof(WaveshareDisplay));
+	if (!display) return NULL;
+
+    UWORD imagesize = ((EPD_WIDTH % 8 == 0)? (EPD_WIDTH / 8 ): (EPD_WIDTH / 8 + 1)) * EPD_HEIGHT;
+	display->red = malloc(imagesize);
+	display->black = malloc(imagesize);
+
+	if(!display->red || !display->black) {
+		free(display->red);
+		free(display->black);
+		free(display);
+		return NULL;
+	}
+}
+
+static void free_display(WaveshareDisplay* display) {
+	if(!display) return;
+
+	free(display->red);
+	free(display->black);
+	free(display);
+}
+
+void* initialize_display() {
+    if(DEV_ModuleInit() != 0) {
+		return NULL;
+	}
+	if(EPD_Init() != 0) {
+		DEV_ModuleExit();
+		return NULL;
+	}
+
+	WaveshareDisplay* display = alloc_display();
+	if(!display) return NULL;
+
+    Paint_NewImage(display->red, EPD_WIDTH, EPD_HEIGHT, 0, WHITE);
+    Paint_NewImage(display->black, EPD_WIDTH, EPD_HEIGHT, 0, WHITE);
+
+	return display;
+}
+
+void* destroy_display(void* display) {
+    EPD_Sleep();
+	DEV_ModuleExit();
+	free_display((WaveshareDisplay*)display);
+}
+
+int query_display_properties(void* display, DisplayProperties* properties) {
+	properties->width = EPD_WIDTH;
+	properties->height = EPD_HEIGHT;
+	properties->mode = indexed;
+	properties->color_depth = 3;
+	return 0;
+}
+
+int query_color_palette(void* display, int* colors) {
+	colors[0] = 0x000000;
+	colors[1] = 0xFFFFFF;
+	colors[2] = 0xFF0000;
+	return 0;
+}
+
+int clear(void* user_data) {
+	WaveshareDisplay* display = (WaveshareDisplay*)user_data;
+
+    Paint_SelectImage(display->black);
+    Paint_Clear(WHITE);
+    Paint_SelectImage(display->red);
+    Paint_Clear(WHITE);
+
+	return 0;
+}
+
+int set_pixel(void* user_data, int x, int y, int color) {
+	WaveshareDisplay* display = (WaveshareDisplay*)user_data;
+	//TODO(texel, 2021-03-30): define how the color parameter works
+
+	// clear that pixel to white
+	Paint_SelectImage(display->black);
+	Paint_SetPixel(x, y, WHITE);
+	Paint_SelectImage(display->red);
+	Paint_SetPixel(x, y, WHITE);
+
+	switch(color) {
+		case black:
+			Paint_SelectImage(display->black);
+			Paint_SetPixel(x, y, BLACK);
+			break;
+		case white:
+			// nothing to do
+			break;
+		case red:
+			Paint_SelectImage(display->red);
+			Paint_SetPixel(x, y, BLACK);
+		default:
+			return 1;
+	}
+	return 0;
+}
+
+int display(void* user_data) {
+	WaveshareDisplay* display = (WaveshareDisplay*)user_data;
+    EPD_Display(display->black, display->red);
+    EPD_Sleep();
+	return 0;
+}
+
+void Handler(int signo)
 {
     //System Exit
     printf("\r\nHandler:Goto Sleep mode\r\n");
@@ -24,14 +140,6 @@ void  Handler(int signo)
 
 int main(int argc, char* argv[])
 {
-	if (argc != 2) {
-		printf("usage: %s <name>\n", argv[0]);
-		exit(1);
-	}
-
-    printf("7.5inch e-Paper B(C) demo\r\n");
-    DEV_ModuleInit();
-
     // Exception handling:ctrl + c
     signal(SIGINT, Handler);
 
