@@ -6,77 +6,9 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "plugin.h"
+
 using namespace std;
-
-struct dlopen_deleter {
-	void operator()(void* handle) {
-		dlclose(handle);
-	}
-};
-using dl_ptr = std::unique_ptr<void, dlopen_deleter>;
-
-void noop(void*) {}
-
-class Plugin {
-	using initialize_fp = void*(*)();
-	using destroy_fp = void(*)(void*);
-	using clear_fp = int(*)(void*);
-	using set_pixel_fp = int(*)(void*, int, int, int);
-	using display_fp = int(*)(void*);
-
-	using display_ptr = std::unique_ptr<void, destroy_fp>;
-public:
-	Plugin(const char* name):
-		plugin_library{dlopen(name, RTLD_NOW)} {
-		if(!plugin_library) {
-			std::cerr << dlerror() << std::endl;
-			throw std::runtime_error{"Failed to open library!"};
-		}
-		initialize_display = load_function<initialize_fp>("initialize_display");
-		destroy_display = load_function<destroy_fp>("destroy_display");
-		clear_display = load_function<clear_fp>("clear");
-		set_pixel_display = load_function<set_pixel_fp>("set_pixel");
-		display_display = load_function<display_fp>("display");
-
-		auto* d = initialize_display();
-		if(!d) {
-			throw runtime_error{"Failed to initialize display!"};
-		}
-		display = {d, destroy_display};
-	}
-
-	void clear() {
-		clear_display(display.get());
-	}
-
-	void set_pixel(int x, int y, int color) {
-		set_pixel_display(display.get(), x, y, color);
-	}
-
-	void display_() {
-		display_display(display.get());
-	}
-
-private:
-	dl_ptr plugin_library;
-	initialize_fp initialize_display = {};
-	destroy_fp destroy_display = {};
-	clear_fp clear_display = {};
-	set_pixel_fp set_pixel_display = {};
-	display_fp display_display = {};
-
-	display_ptr display = {nullptr, noop};
-
-	template<typename F>
-	F load_function(const char* name) {
-		F ptr = reinterpret_cast<F>(dlsym(plugin_library.get(), name));
-		if(!ptr){
-			std::cerr << dlerror() << std::endl;
-			throw std::runtime_error{"Failed to lookup function!"};
-		}
-		return ptr;
-	}
-};
 
 int main(int argc, char* argv[]) {
 	if(argc != 2) {
@@ -106,7 +38,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	stbi_image_free(data);
-	sdl_plugin.display_();
+	sdl_plugin.display();
 	int c;
 	std::cin >> c;
 }
