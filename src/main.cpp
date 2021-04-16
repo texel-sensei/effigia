@@ -39,6 +39,4 @@ int main(int argc, char* argv[]) {
 	}
 	stbi_image_free(data);
 	sdl_plugin.display();
-	int c;
-	std::cin >> c;
 }
