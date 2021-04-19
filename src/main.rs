@@ -1,17 +1,16 @@
-#![allow(non_upper_case_globals)]
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-
 extern crate image;
 
+mod display;
+use crate::display::*;
 
-fn conv(color: &image::Rgb<u8>) -> i32 {
-    color[2] as i32 | ((color[1] as i32) << 8) | ((color[0] as i32) << 16)
+fn conv(color: &image::Rgb<u8>) -> u32 {
+    color[2] as u32 | ((color[1] as u32) << 8) | ((color[0] as u32) << 16)
 }
 
 fn main() {
-    unsafe {
-        let plugin = DisplayPlugin::new("plugins/libsdl_display.so").expect("Failed loading display!");
-        let instance = plugin.initialize_display();
+        let plugin = unsafe {DisplayPlugin::new("plugins/libsdl_display.so").expect("Failed loading display!")};
+
+        let mut display = Display::new(&plugin).expect("");
         println!("Sucessfully loaded plugin!");
 
         let args: Vec<String> = std::env::args().collect();
@@ -20,15 +19,13 @@ fn main() {
 
         let img = image::open(file).expect("Can't load image!").into_rgb8();
 
-        plugin.clear(instance);
+        display.clear();
 
         for (x, y, pixel) in img.enumerate_pixels() {
             let color = conv(pixel);
-            plugin.set_pixel(instance, x as i32, y as i32, color);
+            display.set_pixel(x, y, color);
         }
 
-        plugin.present(instance);
+        display.present();
         std::thread::sleep(std::time::Duration::from_millis(2000));
-        plugin.destroy_display(instance);
-    }
 }
