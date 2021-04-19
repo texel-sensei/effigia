@@ -89,7 +89,7 @@ extern "C" {
 
 		return -1;
 	}
-	int display(void* display) {
+	int present(void* display) {
 		auto d = static_cast<Display*>(display);
 		d->present();
 		return -1;

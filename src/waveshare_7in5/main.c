@@ -121,7 +121,7 @@ int set_pixel(void* user_data, int x, int y, int color) {
 	return 0;
 }
 
-int display(void* user_data) {
+int present(void* user_data) {
 	WaveshareDisplay* display = (WaveshareDisplay*)user_data;
     EPD_Display(display->black, display->red);
     EPD_Sleep();

@@ -27,7 +27,7 @@ fn main() {
             plugin.set_pixel(instance, x as i32, y as i32, color);
         }
 
-        plugin.display(instance);
+        plugin.present(instance);
         std::thread::sleep(std::time::Duration::from_millis(2000));
         plugin.destroy_display(instance);
     }

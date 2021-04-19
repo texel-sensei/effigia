@@ -63,8 +63,22 @@ extern "C" {
 	int query_color_palette(void* display, int* colors);
 
 	int clear(void* display);
+	/**
+	 * Sets the color for a single pixel on the display. Pixel coordinates
+	 * start with (0,0) in the upper left corner. Changes do not need to be
+	 * visible until \ref present() is called.
+	 *
+	 * \param color Color for the given pixel in RGB format. If the display
+	 * 				uses indexed color mode, then this is guaranteed to be
+	 * 				one of the colors given by the palette (*not* the index).
+	 */
 	int set_pixel(void* display, int x, int y, int color);
-	int display(void* display);
+
+	/**
+	 * Present the final image. This is called after all pixels have been
+	 * submitted via \ref set_pixel().
+	 */
+	int present(void* display);
 
 
 #ifdef __cplusplus
