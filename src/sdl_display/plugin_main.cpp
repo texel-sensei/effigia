@@ -44,6 +44,14 @@ public:
 		SDL_DestroyTexture(texture);
 	}
 
+	int query_properties(DisplayProperties* properties) {
+		properties->width = surface->w;
+		properties->height = surface->h;
+		properties->mode = ColorMode::rgb;
+		properties->color_depth = 8;
+		return 0;
+	}
+
 //private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
@@ -70,7 +78,8 @@ extern "C" {
 	}
 
 	int query_display_properties(void* display, DisplayProperties* properties) {
-		return -1;
+		auto d = static_cast<Display*>(display);
+		return d->query_properties(properties);
 	}
 
 	int query_color_palette(void* display, int* colors) {

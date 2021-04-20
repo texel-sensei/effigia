@@ -17,7 +17,13 @@ fn main() {
         let file = &args[1];
         println!("Loading image {}", file);
 
-        let img = image::open(file).expect("Can't load image!").into_rgb8();
+        let properties = display.query_display_properties().expect("Failed to query properties");
+        println!("Display Properties:\n{:?}", properties);
+
+        let img = image::open(file)
+            .expect("Can't load image!")
+            .resize(properties.width as u32, properties.height as u32, image::imageops::FilterType::CatmullRom)
+            .into_rgb8();
 
         display.clear();
 
