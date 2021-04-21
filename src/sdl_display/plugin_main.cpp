@@ -10,7 +10,7 @@ using namespace std;
 
 struct EmulatedDisplay {
 	DisplayProperties properties;
-	std::vector<int> palette;
+	std::vector<Color> palette;
 };
 
 const EmulatedDisplay waveshare = {
@@ -90,7 +90,7 @@ public:
 		return 0;
 	}
 
-	int query_color_palette(int* colors) {
+	int query_color_palette(Color* colors) {
 		if(!emulation || emulation->properties.mode != ColorMode::indexed) {
 			return -1;
 		}
@@ -130,7 +130,7 @@ extern "C" {
 		return d->query_properties(properties);
 	}
 
-	int query_color_palette(void* display, int* colors) {
+	int query_color_palette(void* display, Color* colors) {
 		auto d = static_cast<Display*>(display);
 		return d->query_color_palette(colors);
 	}
@@ -140,7 +140,7 @@ extern "C" {
 		d->clear();
 		return 0;
 	}
-	int set_pixel(void* display, int x, int y, int color) {
+	int set_pixel(void* display, int x, int y, Color color) {
 		auto d = static_cast<Display*>(display);
 		return d->set_pixel(x, y, color);
 	}

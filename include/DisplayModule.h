@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+	typedef unsigned int Color;
+
 	typedef enum ColorMode {
 		indexed,
 		rgb,
@@ -60,7 +62,7 @@ extern "C" {
 	 *    array will be filled with the supported color palette. Each entry is
 	 *    in the form 0x00RRGGBB.
 	 */
-	int query_color_palette(void* display, int* colors);
+	int query_color_palette(void* display, Color* colors);
 
 	int clear(void* display);
 	/**
@@ -72,7 +74,7 @@ extern "C" {
 	 * 				uses indexed color mode, then this is guaranteed to be
 	 * 				one of the colors given by the palette (*not* the index).
 	 */
-	int set_pixel(void* display, int x, int y, int color);
+	int set_pixel(void* display, int x, int y, Color color);
 
 	/**
 	 * Present the final image. This is called after all pixels have been

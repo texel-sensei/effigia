@@ -36,7 +36,7 @@ impl<'a> Display<'a> {
 
     pub fn set_pixel(&mut self, x: u32, y: u32, color: u32)  -> Result<(), i32>{
         unsafe {
-            code_to_result(self.library.set_pixel(self.instance, x as i32, y as i32, color as i32))
+            code_to_result(self.library.set_pixel(self.instance, x as i32, y as i32, color))
         }
     }
 
@@ -52,6 +52,17 @@ impl<'a> Display<'a> {
             code_to_result(self.library.query_display_properties(self.instance, properties.as_mut_ptr()))?;
             Ok(properties.assume_init())
         }
+    }
+
+    pub fn query_color_palette(&self) -> Result<Vec<u32>, i32> {
+        let properties = self.query_display_properties()?;
+        assert_eq!(properties.mode, ColorMode_indexed);
+        let mut palette: Vec<u32> = Vec::with_capacity(properties.color_depth as usize);
+        unsafe {
+            code_to_result(self.library.query_color_palette(self.instance, palette.as_mut_ptr()))?;
+            palette.set_len(palette.capacity());
+        }
+        Ok(palette)
     }
 }
 

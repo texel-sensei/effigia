@@ -16,9 +16,9 @@ typedef struct WaveshareDisplay {
 	UBYTE* black;
 } WaveshareDisplay;
 
-typedef enum Color {
+typedef enum ColorName {
 	black = 0, white, red
-} Color;
+} ColorName;
 
 static WaveshareDisplay* alloc_display() {
 	WaveshareDisplay* display = malloc(sizeof(WaveshareDisplay));
@@ -62,7 +62,7 @@ void* initialize_display() {
 	return display;
 }
 
-void* destroy_display(void* display) {
+void destroy_display(void* display) {
     EPD_Sleep();
 	DEV_ModuleExit();
 	free_display((WaveshareDisplay*)display);
@@ -76,7 +76,7 @@ int query_display_properties(void* display, DisplayProperties* properties) {
 	return 0;
 }
 
-int query_color_palette(void* display, int* colors) {
+int query_color_palette(void* display, Color* colors) {
 	colors[0] = 0x000000;
 	colors[1] = 0xFFFFFF;
 	colors[2] = 0xFF0000;
@@ -94,7 +94,7 @@ int clear(void* user_data) {
 	return 0;
 }
 
-int set_pixel(void* user_data, int x, int y, int color) {
+int set_pixel(void* user_data, int x, int y, Color color) {
 	WaveshareDisplay* display = (WaveshareDisplay*)user_data;
 	//TODO(texel, 2021-03-30): define how the color parameter works
 
