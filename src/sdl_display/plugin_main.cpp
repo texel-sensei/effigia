@@ -4,25 +4,50 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 using namespace std;
+
+struct EmulatedDisplay {
+	DisplayProperties properties;
+	std::vector<int> palette;
+};
+
+const EmulatedDisplay waveshare = {
+	{ 384, 640, ColorMode::indexed, 3 },
+    {0x000000, 0xFFFFFF, 0xFF0000}
+};
 
 
 class Display {
 public:
 	Display() {
+		int w = 600;
+		int h = 800;
+
+		auto* emulate_id = getenv("EMULATE_DISPLAY");
+		if(emulate_id && strcmp(emulate_id, "Waveshare") == 0) {
+			cout << "Emulating waveshare display!" << endl;
+			emulation = &waveshare;
+		}
+
+		if(emulation) {
+			w = emulation->properties.width;
+			h = emulation->properties.height;
+		}
+
 		if(SDL_Init(SDL_INIT_VIDEO) != 0) {
 			throw runtime_error{"Failed to init SDL!"};
 		}
-		window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 600, 800, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, SDL_WINDOW_SHOWN);
 		if(!window) {
 			throw runtime_error{"Failed to create window!"};
 		}
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-		surface = SDL_CreateRGBSurface(0, 750, 1000, 32, 0x00FF0000, 0x0000FF00, 0x000000FF,0xFF000000);
+		surface = SDL_CreateRGBSurface(0, w, h, 32, 0x00FF0000, 0x0000FF00, 0x000000FF,0xFF000000);
 		if(!surface) {
 			cerr << "Failed to create surface!" << endl;
-//			throw runtime_error{"Failed to create surface!"};
+			throw runtime_error{"Failed to create surface!"};
 		}
 	}
 	~Display() {
@@ -44,7 +69,20 @@ public:
 		SDL_DestroyTexture(texture);
 	}
 
+	int set_pixel(int x, int y, int color) {
+		if(x < 0 || x >= surface->w || y < 0 || y >= surface->h) {
+			return -1;
+		}
+
+		static_cast<uint32_t*>(surface->pixels)[y*surface->w+x] = color;
+		return 0;
+	}
+
 	int query_properties(DisplayProperties* properties) {
+		if(emulation) {
+			*properties = emulation->properties;
+			return 0;
+		}
 		properties->width = surface->w;
 		properties->height = surface->h;
 		properties->mode = ColorMode::rgb;
@@ -52,7 +90,17 @@ public:
 		return 0;
 	}
 
-//private:
+	int query_color_palette(int* colors) {
+		if(!emulation || emulation->properties.mode != ColorMode::indexed) {
+			return -1;
+		}
+		copy(emulation->palette.begin(), emulation->palette.end(), colors);
+		return 0;
+	}
+
+private:
+	EmulatedDisplay const* emulation = nullptr;
+
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Surface* surface;
@@ -83,7 +131,8 @@ extern "C" {
 	}
 
 	int query_color_palette(void* display, int* colors) {
-		return -1;
+		auto d = static_cast<Display*>(display);
+		return d->query_color_palette(colors);
 	}
 
 	int clear(void* display) {
@@ -93,10 +142,7 @@ extern "C" {
 	}
 	int set_pixel(void* display, int x, int y, int color) {
 		auto d = static_cast<Display*>(display);
-
-		static_cast<uint32_t*>(d->surface->pixels)[y*d->surface->w+x] = color;
-
-		return -1;
+		return d->set_pixel(x, y, color);
 	}
 	int present(void* display) {
 		auto d = static_cast<Display*>(display);
