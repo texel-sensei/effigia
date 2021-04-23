@@ -180,7 +180,7 @@ extern "C" {
 	int present(void* display) {
 		auto d = static_cast<Display*>(display);
 		d->present();
-		return -1;
+		return 0;
 	}
 
 	DisplayEvent* poll_events(void* display) {

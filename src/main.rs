@@ -45,7 +45,7 @@ fn conv(color: &image::Rgb<u8>) -> u32 {
     color[2] as u32 | ((color[1] as u32) << 8) | ((color[0] as u32) << 16)
 }
 
-fn display_image_file(display: &mut Display, file: &str) {
+fn display_image_file(display: &mut Display, file: &str) -> Result<(), i32> {
     let properties = display.query_display_properties().expect("Failed to query properties");
 
     println!("Loading image {}", file);
@@ -56,18 +56,21 @@ fn display_image_file(display: &mut Display, file: &str) {
 
     if properties.mode == ColorMode_indexed {
         let palette: ColorVec = display.query_color_palette().unwrap().into();
-        println!("Indexed display with palette {:?}", &palette);
         image::imageops::dither(&mut img, &palette);
     }
 
-    display.clear();
+    display.clear()?;
+
+    let x_off = (properties.width as u32 - img.dimensions().0)/2;
+    let y_off = (properties.height as u32 - img.dimensions().1)/2;
 
     for (x, y, pixel) in img.enumerate_pixels() {
         let color = conv(pixel);
-        display.set_pixel(x, y, color);
+        display.set_pixel(x+x_off, y+y_off, color)?;
     }
 
-    display.present();
+    display.present()?;
+    Ok(())
 }
 
 fn main() {
@@ -79,7 +82,10 @@ fn main() {
         let args: Vec<String> = std::env::args().collect();
         let file = &args[1];
 
-        display_image_file(&mut display, file);
+        let result = display_image_file(&mut display, file);
+        if let Err(code) = result {
+            println!("Failed to display image! Code {}", code);
+        }
 
         let mut done = false;
         while !done {
@@ -87,9 +93,12 @@ fn main() {
                 println!("Got event {}", event.id);
                 match event.id {
                     0 => done = true,
-                    2 => unsafe {
-                        let file = CStr::from_ptr(event.data.new_image.filename);
-                        display_image_file(&mut display, file.to_str().unwrap());
+                    2 => {
+                        let file = unsafe {CStr::from_ptr(event.data.new_image.filename) };
+                        let result = display_image_file(&mut display, file.to_str().unwrap());
+                        if let Err(code) = result {
+                            println!("Failed to display image! Code {}", code);
+                        }
                     },
                     _ => ()
                 }
