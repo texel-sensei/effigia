@@ -6,6 +6,8 @@
  * Header that defines the functions a display module needs to support.
  */
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,6 +34,13 @@ extern "C" {
 		int color_depth;
 	} DisplayProperties;
 
+	typedef struct DisplayEvent {
+		int id;
+		union EventData {
+			struct { char* filename; } new_image;
+		} data;
+	} DisplayEvent;
+
 	/**
 	 * Do necessary setup work required for the display to function. The
 	 * returned pointer is passed to all other display functions.
@@ -40,6 +49,7 @@ extern "C" {
 	 * indicate that setup failed.
 	 */
 	void* initialize_display();
+
 	/**
 	 * Tear down a display and free all related resources.
 	 */
@@ -65,6 +75,7 @@ extern "C" {
 	int query_color_palette(void* display, Color* colors);
 
 	int clear(void* display);
+
 	/**
 	 * Sets the color for a single pixel on the display. Pixel coordinates
 	 * start with (0,0) in the upper left corner. Changes do not need to be
@@ -81,6 +92,24 @@ extern "C" {
 	 * submitted via \ref set_pixel().
 	 */
 	int present(void* display);
+
+	/**
+	 * Poll for new events signaled by the display. This function is called
+	 * regularly by the main program and if any events have happened, then this
+	 * function returns a pointer to an event struct with information about the
+	 * event. Any non-NULL pointers that this function returns must be freed with
+	 * \ref free_event().
+	 *
+	 * If no events did happen, of the display does not support event handling,
+	 * then this function returns NULL.
+	 */
+	DisplayEvent* poll_events(void* display);
+
+	/**
+	 * Free the memory from a given \ref DisplayEvent. Freeing NULL is safe.
+	 * This function must only be called for events received via \ref poll_events().
+	 */
+	void free_event(DisplayEvent*);
 
 
 #ifdef __cplusplus

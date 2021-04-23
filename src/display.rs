@@ -1,13 +1,43 @@
+#![allow(dead_code)]
+#![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
+use std::ops::Deref;
 use std::os::raw::{c_void};
-use std::ptr::null_mut;
+use std::ptr::{null_mut};
 use std::mem::MaybeUninit;
 
 pub struct Display<'a> {
     library: &'a DisplayPlugin,
     instance: *mut c_void
+}
+
+pub struct DisplayEventPtr<'a>{
+    event: *mut DisplayEvent,
+    library: &'a DisplayPlugin
+}
+
+impl<'a> DisplayEventPtr<'a> {
+    pub fn new(event: *mut DisplayEvent, library: &'a DisplayPlugin) -> Self
+    {
+        assert!(event != null_mut());
+        DisplayEventPtr{event, library}
+    }
+}
+
+impl<'a> Drop for DisplayEventPtr<'a> {
+    fn drop(&mut self) {
+        unsafe {self.library.free_event(self.event); }
+    }
+}
+
+impl<'a> Deref for DisplayEventPtr<'a> {
+    type Target = DisplayEvent;
+
+    fn deref(&self) -> &'a Self::Target {
+        unsafe { &*self.event }
+    }
 }
 
 fn code_to_result(code: i32) -> Result<(),i32> {
@@ -63,6 +93,18 @@ impl<'a> Display<'a> {
             palette.set_len(palette.capacity());
         }
         Ok(palette)
+    }
+
+    pub fn poll_events(&self) -> Option<DisplayEventPtr<'a>> {
+        unsafe {
+            let event_ptr = self.library.poll_events(self.instance);
+
+            if event_ptr != null_mut() {
+                Some(DisplayEventPtr::new(event_ptr, &self.library))
+            } else {
+                None
+            }
+        }
     }
 }
 

@@ -49,6 +49,8 @@ public:
 			cerr << "Failed to create surface!" << endl;
 			throw runtime_error{"Failed to create surface!"};
 		}
+
+		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	}
 	~Display() {
 		SDL_FreeSurface(surface);
@@ -58,6 +60,7 @@ public:
 	}
 
 	void clear() {
+		SDL_FillRect(surface, nullptr, 0);
 		SDL_RenderClear(renderer);
 	}
 
@@ -96,6 +99,36 @@ public:
 		}
 		copy(emulation->palette.begin(), emulation->palette.end(), colors);
 		return 0;
+	}
+
+	DisplayEvent* poll_events() {
+		SDL_Event sdl_event;
+
+		while(SDL_PollEvent(&sdl_event)) {
+			switch(sdl_event.type) {
+				case SDL_QUIT: {
+					auto event = new DisplayEvent;
+					event->id = 0; // TODO: define some actual events
+					return event;
+			    }
+				case SDL_DROPFILE: {
+					auto event = new DisplayEvent;
+					event->id = 2;
+					event->data.new_image.filename = sdl_event.drop.file;
+					return event;
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
+	static void free_event(DisplayEvent* event) {
+		if(!event) return;
+		if(event->id == 2) {
+			SDL_free(event->data.new_image.filename);
+		}
+		delete event;
 	}
 
 private:
@@ -148,6 +181,15 @@ extern "C" {
 		auto d = static_cast<Display*>(display);
 		d->present();
 		return -1;
+	}
+
+	DisplayEvent* poll_events(void* display) {
+		auto d = static_cast<Display*>(display);
+		return d->poll_events();
+	}
+
+	void free_event(DisplayEvent* ptr) {
+		Display::free_event(ptr);
 	}
 
 
