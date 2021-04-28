@@ -107,7 +107,7 @@ int set_pixel(void* user_data, int x, int y, Color color) {
 
 	// Transpose width/height, as we have the display in potrait
 	int tmp = x;
-	x = y;
+	x = EPD_WIDTH - y;
 	y = tmp;
 
 	// clear that pixel to white
@@ -127,6 +127,7 @@ int set_pixel(void* user_data, int x, int y, Color color) {
 		case red:
 			Paint_SelectImage(display->red);
 			Paint_SetPixel(x, y, BLACK);
+			break;
 		default:
 			return 1;
 	}

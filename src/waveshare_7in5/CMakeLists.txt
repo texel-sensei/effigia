@@ -19,7 +19,6 @@ add_library(waveshare_display MODULE
 target_link_libraries(waveshare_display PRIVATE -lwiringPi)
 target_include_directories(waveshare_display PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include)
 set_target_properties(waveshare_display PROPERTIES
-	OUTPUT_NAME waveshare_display.so
 	PREFIX ""
 	SUFFIX ".mod"
 	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
