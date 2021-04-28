@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.7)
 project(waveshare_display LANGUAGES C)
 
 add_library(waveshare_display MODULE
-	calibrate.c
 	Debug.h
 	DEV_Config.c
 	DEV_Config.h
