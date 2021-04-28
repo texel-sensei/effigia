@@ -36,6 +36,7 @@ static WaveshareDisplay* alloc_display() {
 		free(display);
 		return NULL;
 	}
+	return display;
 }
 
 static void free_display(WaveshareDisplay* display) {
@@ -74,8 +75,9 @@ void destroy_display(void* display) {
 }
 
 int query_display_properties(void* display, DisplayProperties* properties) {
-	properties->width = EPD_WIDTH;
-	properties->height = EPD_HEIGHT;
+	// Transpose width/height, as we have the display in potrait
+	properties->width = EPD_HEIGHT;
+	properties->height = EPD_WIDTH;
 	properties->mode = indexed;
 	properties->color_depth = 3;
 	return 0;
@@ -102,7 +104,11 @@ int clear(void* user_data) {
 
 int set_pixel(void* user_data, int x, int y, Color color) {
 	WaveshareDisplay* display = (WaveshareDisplay*)user_data;
-	//TODO(texel, 2021-03-30): define how the color parameter works
+
+	// Transpose width/height, as we have the display in potrait
+	int tmp = x;
+	x = y;
+	y = tmp;
 
 	// clear that pixel to white
 	Paint_SelectImage(display->black);
@@ -134,7 +140,14 @@ int present(void* user_data) {
 	return 0;
 }
 
+// Signal a single stop event. Further calls return NULL, to avoid
+// looping infinitely in the event loop (as first all pending events
+// are handled and then the loop is exited after a stop).
 DisplayEvent* poll_events(void* display){
+	static int first_call = 1;
+	if(!first_call) return NULL;
+	first_call = 0;
+
 	static DisplayEvent always_quit;
 	always_quit.id = 0;
 	return &always_quit;
