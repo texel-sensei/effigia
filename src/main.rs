@@ -54,10 +54,11 @@ fn display_image_file(display: &mut Display, file: &str) -> Result<(), i32> {
         .resize(properties.width as u32, properties.height as u32, image::imageops::FilterType::CatmullRom)
         .into_rgb8();
 
+    let palette: Option<ColorVec>;
     if properties.mode == ColorMode_indexed {
-        let palette: ColorVec = display.query_color_palette().unwrap().into();
-        image::imageops::dither(&mut img, &palette);
-    }
+        palette = Some(display.query_color_palette().unwrap().into());
+        image::imageops::dither(&mut img, palette.as_ref().unwrap());
+    } else {palette = None;}
 
     display.clear()?;
 
@@ -65,7 +66,12 @@ fn display_image_file(display: &mut Display, file: &str) -> Result<(), i32> {
     let y_off = (properties.height as u32 - img.dimensions().1)/2;
 
     for (x, y, pixel) in img.enumerate_pixels() {
-        let color = conv(pixel);
+        let color = if let Some(pal) = palette.as_ref() {
+            use image::imageops::colorops::ColorMap;
+            pal.index_of(pixel) as u32
+        } else {
+            conv(pixel)
+        };
         display.set_pixel(x+x_off, y+y_off, color)?;
     }
 

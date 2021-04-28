@@ -73,24 +73,29 @@ public:
 		SDL_DestroyTexture(texture);
 	}
 
+	DisplayProperties get_properties() const {
+		if(emulation) return emulation->properties;
+		return DisplayProperties{surface->w, surface->h, ColorMode::rgb, 8};
+	}
+
 	int set_pixel(int x, int y, int color) {
 		if(x < 0 || x >= surface->w || y < 0 || y >= surface->h) {
 			return -1;
 		}
 
+		if(get_properties().mode == ColorMode::indexed && emulation) {
+			auto const& palette = emulation->palette;
+			if(color >= palette.size()) return -1;
+			color = palette[color];
+		}
+
 		static_cast<uint32_t*>(surface->pixels)[y*surface->w+x] = color;
+
 		return 0;
 	}
 
 	int query_properties(DisplayProperties* properties) {
-		if(emulation) {
-			*properties = emulation->properties;
-			return 0;
-		}
-		properties->width = surface->w;
-		properties->height = surface->h;
-		properties->mode = ColorMode::rgb;
-		properties->color_depth = 8;
+		*properties = get_properties();
 		return 0;
 	}
 
