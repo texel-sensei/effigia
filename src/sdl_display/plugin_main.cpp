@@ -15,7 +15,8 @@ struct EmulatedDisplay {
 
 const EmulatedDisplay waveshare = {
 	{ 384, 640, ColorMode::indexed, 3 },
-    {0x000000, 0xFFFFFF, 0xFF0000}
+	// measured using phone camera
+    {0x100409, 0xF2E0CE, 0xD1281A} // black, white, red
 };
 
 

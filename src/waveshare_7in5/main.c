@@ -77,9 +77,10 @@ int query_display_properties(void* display, DisplayProperties* properties) {
 }
 
 int query_color_palette(void* display, Color* colors) {
-	colors[0] = 0x000000;
-	colors[1] = 0xFFFFFF;
-	colors[2] = 0xFF0000;
+	// colors measured using phone camera
+	colors[0] = 0x100409; // black
+	colors[1] = 0xF2E0CE; // white
+	colors[2] = 0xD1281A; // red
 	return 0;
 }
 
