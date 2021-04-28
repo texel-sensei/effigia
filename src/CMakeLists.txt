@@ -1,17 +1,16 @@
-add_subdirectory(sdl_display)
+set(modules sdl_display waveshare_7in5)
 
-# We need to link with pthreads, because of ... something related to opengl
-# Not doing it causes random __gnu_cxx::recursive_init_error exceptions to happen,
-# both when trying to initialize SDL or GLFW. Apparently it is related to dynamic
-# loading of GL, mesa and some threading shenanigans.
-# See this link for more info: https://gitlab.freedesktop.org/mesa/mesa/-/issues/3199
-find_package(Threads REQUIRED)
-add_executable(gallery
-	main.cpp
-	stb_image.h
-	plugin.h
-)
-target_link_libraries(gallery PRIVATE
-	plugin_interface
-	-ldl Threads::Threads
-)
+foreach(module ${modules})
+	message(STATUS "Trying to compile ${module}")
+	try_compile(RESULT_VAR
+		${CMAKE_BINARY_DIR}/${module}
+		${CMAKE_CURRENT_LIST_DIR}/${module}
+		${module}
+	)
+	if(RESULT_VAR)
+		message(STATUS "Adding module ${module} to project!")
+		add_subdirectory(${module})
+	else()
+		message(STATUS "Module ${module} failed to compile, ignoring for build")
+	endif()
+endforeach()

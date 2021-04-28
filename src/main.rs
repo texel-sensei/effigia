@@ -74,7 +74,7 @@ fn display_image_file(display: &mut Display, file: &str) -> Result<(), i32> {
 }
 
 fn main() {
-        let plugin = unsafe {DisplayPlugin::new("plugins/libsdl_display.so").expect("Failed loading display!")};
+        let plugin = unsafe {DisplayPlugin::new("plugins/sdl_display.mod").expect("Failed loading display!")};
 
         let mut display = Display::new(&plugin).expect("");
         println!("Sucessfully loaded plugin!");
