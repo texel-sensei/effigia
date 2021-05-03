@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.7)
 project(waveshare_display LANGUAGES C)
 
+find_package(wiringPi QUIET)
+
+if(NOT ${wiringPi_FOUND})
+	set(SKIP_MODULE TRUE PARENT_SCOPE)
+	return()
+endif()
+
 add_library(waveshare_display MODULE
 	Debug.h
 	DEV_Config.c
@@ -16,8 +23,11 @@ add_library(waveshare_display MODULE
 	main.c
 )
 
-target_link_libraries(waveshare_display PRIVATE -lwiringPi)
-target_include_directories(waveshare_display PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include)
+target_link_libraries(waveshare_display
+	PRIVATE
+		wiringPi::wiringPi
+		plugin_interface
+)
 set_target_properties(waveshare_display PROPERTIES
 	PREFIX ""
 	SUFFIX ".mod"
