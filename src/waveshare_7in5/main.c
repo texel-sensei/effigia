@@ -150,7 +150,7 @@ DisplayEvent* poll_events(void* display){
 	first_call = 0;
 
 	static DisplayEvent always_quit;
-	always_quit.id = 0;
+	always_quit.id = EFFIGIA_EVENT_SHUTDOWN_REQUESTED;
 	return &always_quit;
 }
 

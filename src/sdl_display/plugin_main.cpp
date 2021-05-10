@@ -114,12 +114,12 @@ public:
 			switch(sdl_event.type) {
 				case SDL_QUIT: {
 					auto event = new DisplayEvent;
-					event->id = 0; // TODO: define some actual events
+					event->id = EFFIGIA_EVENT_SHUTDOWN_REQUESTED;
 					return event;
 			    }
 				case SDL_DROPFILE: {
 					auto event = new DisplayEvent;
-					event->id = 2;
+					event->id = EFFIGIA_EVENT_NEW_IMAGE_REQUESTED;
 					event->data.new_image.filename = sdl_event.drop.file;
 					return event;
 				}
@@ -131,7 +131,7 @@ public:
 
 	static void free_event(DisplayEvent* event) {
 		if(!event) return;
-		if(event->id == 2) {
+		if(event->id == EFFIGIA_EVENT_NEW_IMAGE_REQUESTED) {
 			SDL_free(event->data.new_image.filename);
 		}
 		delete event;

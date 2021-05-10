@@ -98,8 +98,8 @@ fn main() {
             while let Some(event) = display.poll_events() {
                 println!("Got event {}", event.id);
                 match event.id {
-                    0 => done = true,
-                    2 => {
+                    EFFIGIA_EVENT_SHUTDOWN_REQUESTED => done = true,
+                    EFFIGIA_EVENT_NEW_IMAGE_REQUESTED => {
                         let file = unsafe {CStr::from_ptr(event.data.new_image.filename) };
                         let result = display_image_file(&mut display, file.to_str().unwrap());
                         if let Err(code) = result {

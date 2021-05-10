@@ -6,6 +6,7 @@ use std::path::PathBuf;
 fn main() {
     // Invalidate the build whenever the DisplayModule header changes
     println!("cargo:rerun-if-changed=include/DisplayModule.h");
+    println!("cargo:rerun-if-changed=include/Event.h");
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
@@ -14,6 +15,7 @@ fn main() {
         // The input header we would like to generate
         // bindings for.
         .header("include/DisplayModule.h")
+        .header("include/Event.h")
         .dynamic_library_name("DisplayPlugin")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.

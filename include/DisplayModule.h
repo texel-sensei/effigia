@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EFFIGIA_DISPLAY_MODULE_H
+#define EFFIGIA_DISPLAY_MODULE_H
 
 /**
  * \file DisplayModule.h
@@ -7,6 +8,8 @@
  */
 
 #include <stddef.h>
+
+#include "Event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,13 +36,6 @@ extern "C" {
 		 */
 		int color_depth;
 	} DisplayProperties;
-
-	typedef struct DisplayEvent {
-		int id;
-		union EventData {
-			struct { char* filename; } new_image;
-		} data;
-	} DisplayEvent;
 
 	/**
 	 * Do necessary setup work required for the display to function. The
@@ -114,4 +110,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
