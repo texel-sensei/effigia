@@ -78,8 +78,8 @@ extern "C" {
 	 * visible until \ref present() is called.
 	 *
 	 * \param color Color for the given pixel in RGB format. If the display
-	 * 				uses indexed color mode, then this is guaranteed to be
-	 * 				one of the colors given by the palette (*not* the index).
+	 * 				uses indexed color mode, then the index of the color is
+	 *				passed.
 	 */
 	int set_pixel(void* display, int x, int y, Color color);
 
