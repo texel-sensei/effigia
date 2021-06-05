@@ -113,9 +113,13 @@ public:
 		while(SDL_PollEvent(&sdl_event)) {
 			switch(sdl_event.type) {
 				case SDL_QUIT: {
-					auto event = new DisplayEvent;
-					event->id = EFFIGIA_EVENT_SHUTDOWN_REQUESTED;
-					return event;
+					return new DisplayEvent{EFFIGIA_EVENT_SHUTDOWN_REQUESTED};
+			    }
+				case SDL_KEYDOWN: {
+					if (sdl_event.key.keysym.sym == SDLK_q) {
+						return new DisplayEvent{EFFIGIA_EVENT_SHUTDOWN_REQUESTED};
+					}
+					break;
 			    }
 				case SDL_DROPFILE: {
 					auto event = new DisplayEvent;
