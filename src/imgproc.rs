@@ -2,7 +2,32 @@ use crate::{DisplayProperties};
 use image;
 use image::{Pixel};
 
-pub type ProcessedImage = Vec<u32>;
+pub struct ProcessedImage {
+    size: (u32, u32),
+    data: Vec<u32>
+}
+
+impl ProcessedImage {
+    pub fn new(size: (u32, u32), data: Vec<u32>) -> Self {
+        Self{size, data}
+    }
+
+    pub fn index_to_pos(&self, index: usize) -> (u32, u32) {
+        (index as u32 % self.size.0, index as u32 / self.size.0)
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
+impl std::ops::Index<usize> for ProcessedImage {
+    type Output = u32;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
 
 #[derive(Debug)]
 pub struct ColorVec(Vec<image::Rgb<u8>>);
@@ -101,14 +126,7 @@ impl ImageProcessor {
             }
         };
 
-        output
-    }
-
-    pub fn index_to_pos(&self, index: usize) -> (u32, u32) {
-        (
-            index as u32 % self.target_format.width as u32,
-            index as u32 / self.target_format.width as u32
-        )
+        ProcessedImage::new((self.target_format.width as u32, self.target_format.height as u32), output)
     }
 }
 
