@@ -17,6 +17,10 @@ fn main() {
         .header("include/DisplayModule.h")
         .header("include/Event.h")
         .dynamic_library_name("DisplayPlugin")
+        // Disable generation of automatic tests
+        // tests generate UB warnings, see the following issue:
+        // https://github.com/rust-lang/rust-bindgen/issues/1651
+        .layout_tests(false)
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
