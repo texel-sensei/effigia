@@ -11,12 +11,14 @@ using namespace std;
 struct EmulatedDisplay {
 	DisplayProperties properties;
 	std::vector<Color> palette;
+	int clear_color = 0;
 };
 
 const EmulatedDisplay waveshare = {
 	{ 384, 640, ColorMode::indexed, 3 },
 	// measured using phone camera
-    {0x100409, 0xF2E0CE, 0xD1281A} // black, white, red
+    {0x100409, 0xF2E0CE, 0xD1281A}, // black, white, red
+	1
 };
 
 
@@ -61,7 +63,12 @@ public:
 	}
 
 	void clear() {
-		SDL_FillRect(surface, nullptr, 0);
+		Color fill_color = 0;
+		if(emulation) {
+			fill_color = emulation->palette.at(emulation->clear_color);
+		}
+
+		SDL_FillRect(surface, nullptr, fill_color);
 		SDL_RenderClear(renderer);
 	}
 
